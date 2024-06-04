@@ -1,51 +1,53 @@
 class EventTarget {
     constructor() {
-      this.listeners = new Map();
+        this.listeners = new Map();
     }
-  
+
     addEventListener(event, callback) {
-      if (!this.listeners.has(eventName)) {
-      this.listeners.set(eventName, []);
+        if (!this.listeners.has(event)) {
+            this.listeners.set(event, new Set());
+        }
+
+        const eventListeners = this.listeners.get(event);
+
+        if (!eventListeners.has(callback)) {
+            eventListeners.add(callback);
+        }
     }
 
-    const eventListeners = this.listeners.get(eventName);
-    if (!eventListeners.includes(callback)) {
-      eventListeners.push(callback);
-    }
-    }
-  
     removeEventListener(event, callback) {
-      if (this.listeners.has(eventName)) {
-      const eventListeners = this.listeners.get(eventName);
-      const index = eventListeners.indexOf(callback);
+        if (this.listeners.has(event)) {
+            const eventListeners = this.listeners.get(event);
+            eventListeners.delete(callback);
 
-      if (index !== -1) {
-        eventListeners.splice(index, 1);
-      }
+            if (eventListeners.size === 0) {
+                this.listeners.delete(event);
+            }
+        }
     }
-    }
-  
+
     dispatchEvent(event) {
-    if (this.listeners.has(eventName)) {
-      const eventListeners = this.listeners.get(eventName);
-      for (const callback of eventListeners) {
-        callback();
-      }
+        if (this.listeners.has(event)) {
+            const eventListeners = this.listeners.get(event);
+            for (const callback of eventListeners) {
+                callback();
+            }
+        }
     }
-    }
-    
-  }
-  const target = new EventTarget();
+}
+
+// Sample Usage
+const target = new EventTarget();
 const logHello = () => console.log('hello');
 const logWorld = () => console.log('world');
 
 target.addEventListener('hello', logHello);
 target.addEventListener('world', logWorld);
 
-target.dispatchEvent('hello');
-target.dispatchEvent('world');
+target.dispatchEvent('hello'); // Console logs: hello
+target.dispatchEvent('world'); // Console logs: world
 
 target.removeEventListener('hello', logHello);
-target.dispatchEvent('hello');
 
-target.dispatchEvent('world');
+target.dispatchEvent('hello'); // No effect, as 'hello' listener was removed
+target.dispatchEvent('world'); // Console logs: world
